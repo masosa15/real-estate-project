@@ -1,5 +1,7 @@
 # Data Engineering Project
 
+For this Data Engineering project we are using the following technologies and tools:
+
 + Getting the Data – Scraping with BeautifulSoup
 + Orchestrator and Scheduler – Airflow
 + Storing on S3-Boto3
