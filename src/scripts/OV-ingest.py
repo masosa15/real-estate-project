@@ -4,7 +4,6 @@ import ssl
 import re
 import pandas as pd
 import math
-
 from io import StringIO
 import boto3
 

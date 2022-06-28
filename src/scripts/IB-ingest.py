@@ -4,7 +4,6 @@ import re
 import ssl
 import pandas as pd
 import math
-
 import boto3
 import datetime
 from io import StringIO

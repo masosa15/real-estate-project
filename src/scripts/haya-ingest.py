@@ -15,9 +15,8 @@ def Logger(filename):
                         filemode='a',
                         format="%(asctime)s, %(msecs)d %(name)s | %(levelname)s | [ %(filename)s-%(module)s-%(lineno)d ]  : %(message)s",
                         datefmt="%d %H:%M:%S")
-    log = logging.getLogger()
 
-    return log
+    return logging.getLogger()
 
 def get_geo_info():
 
@@ -30,23 +29,16 @@ def get_geo_info():
     payload = ""
     headers = {"cookie": "visid_incap_1561762=rZPnM0cBRtqHbvdFyuNAu2fmRWIAAAAAQUIPAAAAAABnAMBC08Vw8zBewSaIOXlN; incap_ses_315_1561762=4NwIXcu1aTCcXqhq9RpfBGfmRWIAAAAAoASlRvf9Kb29lPYRR6h5Bw%3D%3D"}
 
-    response = requests.request("GET", apiUrl, data=payload, headers=headers, params=querystring)
+    response = requests.request("GET",
+                                apiUrl,
+                                data=payload,
+                                headers=headers,
+                                params=querystring)
 
     return response.json()
 
 def parse_text(text):
     return text
-    """To be complete soon
-    """
-"""    if "\t" in text:
-        text = text.replace("\t", "")
-
-    text_parsed=""
-    for t in text[1::]:
-        if t.isupper():
-            text_parsed += f"\n {t}"
-        else:
-            text_parsed += t """
 
 
 def get_page_soup(url="https://www.haya.es/comprar/viviendas/tarragona/reus/?p=1"):
@@ -58,7 +50,6 @@ def get_page_soup(url="https://www.haya.es/comprar/viviendas/tarragona/reus/?p=1
         log.info(msg=f"The {url} return a different error code: {response.status_code}")
         print(f"The {url} return a different error code: {response.status_code}")
         return None
-
 
     page_soup = Soup(response.text, "html.parser")
 
