@@ -14,18 +14,18 @@ def get_apartment_information(html):
     apartment_list = []
     apartment_items = html.findAll("div", {"class": "item-info-container"})
 
-    for items in apartment_items:
+    for item in apartment_items:
         city = "Reus" #to be modified in the future
-        title = items.a['title']
-        link = items.a['href']
+        title = item.a['title']
+        link = item.a['href']
         reference = link.split("/")[2]
         link = baseurl + link
         address = ""
-        price = html.span.text.replace("\n", "").strip()
-        description = html.p.text
+        price = item.span.text.replace("\n", "").strip()
+        description = item.p.text.replace("\n", "")
 
         #Looking for item information
-        item_details = html.findAll("span", {"class": "item-detail"})
+        item_details = item.findAll("span", {"class": "item-detail"})
         try:
             habitaciones = item_details[0].text
         except:
