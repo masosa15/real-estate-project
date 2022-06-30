@@ -2,21 +2,12 @@ import requests
 from bs4 import BeautifulSoup as Soup
 import re
 import pandas as pd
-import logging
-import boto3
-import datetime
-from io import StringIO
-
+from ingest_functions.functions import get_page
+from ingest_functions.functions import upload_to_s3
+from ingest_functions.functions import Logger
 
 baseurl = "https://www.haya.es/"
-
-def Logger(filename):
-    logging.basicConfig(filename=filename,
-                        filemode='a',
-                        format="%(asctime)s, %(msecs)d %(name)s | %(levelname)s | [ %(filename)s-%(module)s-%(lineno)d ]  : %(message)s",
-                        datefmt="%d %H:%M:%S")
-
-    return logging.getLogger()
+url='https://www.haya.es/comprar/viviendas/tarragona/reus/?p=1'
 
 def get_geo_info():
 
@@ -37,24 +28,6 @@ def get_geo_info():
 
     return response.json()
 
-def parse_text(text):
-    return text
-
-
-def get_page_soup(url="https://www.haya.es/comprar/viviendas/tarragona/reus/?p=1"):
-    # hidden api url in order to put additional filters --> https://www.haya.es/lazy-content/asset/index/index-result/%3Fpagination_random_token=p16488056320510f49f4569fdf1d5057f1814ccd5f0pagination%26asset_selling_mode_id=1%26asset_type_id=2%26geo_province_id=43%26geo_city_id=43123%26asset_publication_detail_id=99%26is_sell_cache=1%26order_by=%5Border_relevance+DESC,haya_asset_identifier+ASC%5D%26p=2/
-    response = requests.request("GET", url)
-
-    if not response.ok:  #response.ok -> response.status_code == 200
-        log = Logger('../errorLog.log')
-        log.info(msg=f"The {url} return a different error code: {response.status_code}")
-        print(f"The {url} return a different error code: {response.status_code}")
-        return None
-
-    page_soup = Soup(response.text, "html.parser")
-
-    return page_soup
-
 def get_pagination_info(page_soup):
 
     pagination_items = {}
@@ -70,7 +43,7 @@ def get_apartments_url(dataPaginationPages):
 
     for i in range(1, dataPaginationPages+1):
 
-        page_soup = get_page_soup(f"https://www.haya.es/comprar/viviendas/tarragona/reus/?p={i}")
+        page_soup = get_page(f"https://www.haya.es/comprar/viviendas/tarragona/reus/?p={i}")
         h2_filter = re.compile("mb-3 *.")
         urls = page_soup.main.findAll("h2", {"class": h2_filter})
         aparment_list += [url.a['href'] for url in urls]
@@ -93,7 +66,7 @@ def get_apartments_info(urls_apartment_list):
              "habitaciones": "N/A"
              }
 
-        page_soup = get_page_soup(url)
+        page_soup = get_page(url)
         if page_soup == None:
             log = Logger('../errorLog.log')
             log.warning(f'Error ocurrido al cargar la pagina : {url}')
@@ -120,9 +93,7 @@ def get_apartments_info(urls_apartment_list):
 
         extra_description = "N/A"
         if page_soup.main.find("div", {"class": "col-sm-10 mt-1"}):
-            extra_description=page_soup.main.find("div", {"class": "col-sm-10 mt-1"}).text
-            extra_description = parse_text(extra_description)
-        dic['extra_description'] = extra_description
+            dic['extra_description'] = page_soup.main.find("div", {"class": "col-sm-10 mt-1"}).text
 
         if page_soup.main.find("span", {"text-16 text-book"}):
             address = page_soup.main.find("span", {"text-16 text-book"}).text
@@ -132,6 +103,7 @@ def get_apartments_info(urls_apartment_list):
 
         caracteristicas = page_soup.main.find("div", {"class": re.compile("row align-items-center")})
         extra_information = []
+
         for div in caracteristicas.findAll("div", {"class": re.compile("col-4 *.")}):
 
             if "Antigüedad" in div.text:
@@ -153,24 +125,8 @@ def get_apartments_info(urls_apartment_list):
         aparment_information.append(dic)
     return aparment_information
 
-def save_aparment_information(df):
-
-    ENDPOINT_URL='http://localhost:4566/'
-    csv_buffer = StringIO()
-    df.to_csv(csv_buffer, index=False)
-
-    today = datetime.datetime.now()
-    date_time = today.strftime("%d_%m_%Y_%H:%M")
-
-
-    filename='scrapped_haya_'+date_time+'.csv'
-
-    s3 = boto3.resource('s3', endpoint_url=ENDPOINT_URL)
-    bucket = s3.Bucket('raw-data')
-    response = bucket.put_object(Key=filename, Body=csv_buffer.getvalue())
-
 def main():
-    page_soup = get_page_soup()
+    page_soup = get_page(url)
     pagination_items = get_pagination_info(page_soup)
 
 
@@ -185,7 +141,9 @@ def main():
 
     result = apartment_df.merge(geo_df, left_on='haya_asset_identifier', right_on='haya_asset_identifier')
 
-    save_aparment_information(result)
+    upload_to_s3(result, 'scrapped_haya_')
+
+    result.to_csv('haya_test')
 
 if __name__ == '__main__':
         main()
