@@ -143,7 +143,5 @@ def main():
 
     upload_to_s3(result, 'scrapped_haya_')
 
-    result.to_csv('haya_test')
-
 if __name__ == '__main__':
         main()
