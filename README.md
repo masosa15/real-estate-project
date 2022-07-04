@@ -4,7 +4,7 @@
 
 The main goal for this project is to get the information of discounted properties in differents websites and compare it to approximate market value. For calculate the approximate market value we use a BBVA appraiser.
 
-In the tableu dashboard we are going to show the best the properties
+In the tableu dashboard we are going to highlight which are the properties with better investment oportunities.
 
 **Data Engineering technologies and tools:**
 
