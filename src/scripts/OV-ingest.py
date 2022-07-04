@@ -6,16 +6,19 @@ import pandas as pd
 import math
 from io import StringIO
 import boto3
+from ingest_functions.functions import get_page
+from ingest_functions.functions import upload_to_s3
 
 import datetime
 
 
 baseurl = "https://www.outletdeviviendas.com"
 context = ssl._create_unverified_context()
-url = ("https://www.outletdeviviendas.com/comprar-viviendas-bancos/tarragona/[*city*]/pagina_[*number*]?ord=precio_asc")
+main_url = ("https://www.outletdeviviendas.com/comprar-viviendas-bancos/tarragona/[*city*]/pagina_[*number*]?ord=precio_asc")
 city_list = ['reus', 'tarragona']
 total_apartment_list = []
 items_per_page = 24
+
 
 def get_page_soup(url):
     page_html = urlopen(url, context=context).read()
@@ -23,10 +26,15 @@ def get_page_soup(url):
     return page_soup
 
 def get_total_page_number(url):
-    """**TO BE implemented**"""
-    page_soup = get_page_soup(url.replace("[*number*]", "1"))
-    page_number = page_soup.h1.text.split(" ", 1)[0]
-    page_number = math.ceil(int(page_number)/items_per_page)
+    url=url.replace("[*number*]", "1")
+    page_soup = get_page(url)
+
+    try:
+        page_number = page_soup.h1.text.split(" ", 1)[0]
+        page_number = math.ceil(int(page_number)/items_per_page)
+    except:
+        print("Ha habido un error : ", page_soup)
+        print("Esta es la url que se ha tratado de acceder: ", url)
     return page_number
 
 def get_page_list(url, city_list):
@@ -35,9 +43,7 @@ def get_page_list(url, city_list):
     total_url_list = []
     for x in url_city:
         page_number = get_total_page_number(x)
-
-        for j in range(1, page_number+1):
-            total_url_list.append(x.replace("[*number*]", str(j)))
+        total_url_list += [x.replace("[*number*]", str(j)) for j in range(1, page_number+1)]
 
     return total_url_list
 
@@ -122,14 +128,14 @@ def save_csv(results):
 
 
 def main():
-    total_url_list = get_page_list(url, city_list)
+    total_url_list = get_page_list(main_url, city_list)
 
-    for urls in total_url_list:
-        page_soup = get_page_soup(urls)
-        city = urls.split("/pagina", 1)[0].split("/tarragona", 1)[1].strip("/")
+    for url in total_url_list:
+        page_soup = get_page(url)
+        city = url.split("/pagina", 1)[0].split("/tarragona", 1)[1].strip("/")
         get_apartment_by_page(page_soup, city)
     save_csv(total_apartment_list)
-
+    pd.DataFrame(total_apartment_list).to_csv("OV.csv")
 
 if __name__ == '__main__':
     main()

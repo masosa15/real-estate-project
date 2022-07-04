@@ -1,12 +1,7 @@
-from urllib.request import urlopen
 from bs4 import BeautifulSoup as Soup
 import re
 import ssl
-import pandas as pd
 import math
-import boto3
-import datetime
-from io import StringIO
 from ingest_functions.functions import get_page
 from ingest_functions.functions import upload_to_s3
 
