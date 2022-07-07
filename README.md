@@ -1,4 +1,4 @@
-# Data Engineering Project (WIP)
+# Data Engineering Project
 
 **Introduction**
 
