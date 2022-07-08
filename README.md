@@ -28,7 +28,7 @@ Summary:
 
 **Snowflake model - Database**
 
-The data model is implemented using a snowflake schema with bridge tables to make many to many relationship.
+The data model is implemented using a snowflake schema with bridge tables to make many to many (n:n) relationship.
 
 The fact table implemented is : `fact_property` 
 
