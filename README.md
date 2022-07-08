@@ -2,9 +2,9 @@
 
 **Introduction**
 
-The main goal for this project is to get the information of discounted properties in differents websites and compare it to approximate market value. In order to comparate to the approximate market value, we are going to use a BBVA apraiser scrapper to get all the relative market information. 
+The main goal for this project is to get the information of discounted properties in differents websites and compare it to approximate market value. In order to comparate to the approximate market value, im going to use the BBVA apraiser scrapper to get all the relative market information. 
 
-In the tableu dashboard we are going to highlight which are the properties with better investment oportunities.
+For the presentation layer, i'll use tableu dashboard to highlight which are the properties with better investment oportunities.
 
 **Data Architecture:**
 
